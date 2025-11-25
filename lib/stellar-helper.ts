@@ -74,24 +74,37 @@ export class StellarHelper {
     xlm: string;
     assets: Array<{ code: string; issuer: string; balance: string }>;
   }> {
-    const account = await this.server.loadAccount(publicKey);
-    
-    const xlmBalance = account.balances.find(
-      (b) => b.asset_type === 'native'
-    );
+    try {
+      const account = await this.server.loadAccount(publicKey);
+      
+      const xlmBalance = account.balances.find(
+        (b) => b.asset_type === 'native'
+      );
 
-    const assets = account.balances
-      .filter((b) => b.asset_type !== 'native')
-      .map((b: any) => ({
-        code: b.asset_code,
-        issuer: b.asset_issuer,
-        balance: b.balance,
-      }));
+      const assets = account.balances
+        .filter((b) => b.asset_type !== 'native')
+        .map((b: any) => ({
+          code: b.asset_code,
+          issuer: b.asset_issuer,
+          balance: b.balance,
+        }));
 
-    return {
-      xlm: xlmBalance && 'balance' in xlmBalance ? xlmBalance.balance : '0',
-      assets,
-    };
+      return {
+        xlm: xlmBalance && 'balance' in xlmBalance ? xlmBalance.balance : '0',
+        assets,
+      };
+    } catch (error: any) {
+      // Account not found (404) - account hasn't been funded yet, this is normal
+      if (error?.response?.status === 404 || error?.status === 404 || 
+          error?.message?.includes('not found') || error?.message?.includes('404')) {
+        return {
+          xlm: '0',
+          assets: [],
+        };
+      }
+      // Re-throw other errors
+      throw error;
+    }
   }
 
   async sendPayment(params: {

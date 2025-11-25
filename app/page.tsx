@@ -14,6 +14,8 @@ import WalletConnection from '@/components/WalletConnection';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import PaymentForm from '@/components/PaymentForm';
 import TransactionHistory from '@/components/TransactionHistory';
+import NFTTicketMint from '@/components/NFTTicketMint';
+import NFTCollection from '@/components/NFTCollection';
 
 export default function Home() {
   const [publicKey, setPublicKey] = useState<string>('');
@@ -35,6 +37,11 @@ export default function Home() {
     setRefreshKey(prev => prev + 1);
   };
 
+  const handleTicketMintSuccess = () => {
+    // Refresh collection
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
       {/* Header */}
@@ -46,8 +53,8 @@ export default function Home() {
                 ⭐
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Stellar Dashboard</h1>
-                <p className="text-white/60 text-sm">Testnet Payment Interface</p>
+                <h1 className="text-2xl font-bold text-white">Stellar NFT Ticket Platform</h1>
+                <p className="text-white/60 text-sm">Payment Dashboard & NFT Ticket Collection</p>
               </div>
             </div>
             
@@ -79,11 +86,11 @@ export default function Home() {
         {!isConnected && (
           <div className="mb-8 bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8 text-center">
             <h2 className="text-3xl font-bold text-white mb-3">
-              Welcome to Stellar Payment Dashboard! 👋
+              Welcome to Stellar NFT Ticket Platform! 🎫
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Connect your wallet to view your balance, send XLM payments, and track your transaction history.
-              All on Stellar's lightning-fast blockchain.
+              Connect your wallet to create NFT tickets for events, matches, concerts, and museums. 
+              Collect your digital tickets and manage your collection on Stellar's lightning-fast blockchain.
             </p>
           </div>
         )}
@@ -111,6 +118,49 @@ export default function Home() {
               {/* Transaction History */}
               <div key={`history-${refreshKey}`}>
                 <TransactionHistory publicKey={publicKey} />
+              </div>
+            </div>
+
+            {/* NFT Ticket Section */}
+            <div className="space-y-8">
+              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-6">
+                <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                  🎫 NFT Ticket Koleksiyon Platformu
+                </h2>
+                <p className="text-white/70 text-sm mb-4">
+                  Etkinlik, maç, konser ve müze biletlerinizi NFT olarak oluşturun ve koleksiyonunuzda saklayın.
+                  Stellar'ın süratli mint, ucuz mint, metadata desteği ve transfer kolaylığı ile.
+                </p>
+                <div className="grid md:grid-cols-3 gap-4 mt-4">
+                  <div className="bg-white/10 rounded-lg p-3">
+                    <div className="text-xl mb-1">⚽</div>
+                    <p className="text-white text-sm font-semibold">Maç Katılım Rozeti</p>
+                    <p className="text-white/60 text-xs">Futbol kulüpleri için</p>
+                  </div>
+                  <div className="bg-white/10 rounded-lg p-3">
+                    <div className="text-xl mb-1">🎓</div>
+                    <p className="text-white text-sm font-semibold">Etkinlik Hatıra NFT'si</p>
+                    <p className="text-white/60 text-xs">Üniversiteler için</p>
+                  </div>
+                  <div className="bg-white/10 rounded-lg p-3">
+                    <div className="text-xl mb-1">🏛️</div>
+                    <p className="text-white text-sm font-semibold">Dijital Müze Bileti</p>
+                    <p className="text-white/60 text-xs">Müzeler ve sergiler için</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* NFT Ticket Mint and Collection */}
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* NFT Ticket Mint */}
+                <div>
+                  <NFTTicketMint publicKey={publicKey} onSuccess={handleTicketMintSuccess} />
+                </div>
+
+                {/* NFT Collection */}
+                <div key={`collection-${refreshKey}`}>
+                  <NFTCollection publicKey={publicKey} />
+                </div>
               </div>
             </div>
 

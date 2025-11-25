@@ -33,9 +33,12 @@ export default function BalanceDisplay({ publicKey }: BalanceDisplayProps) {
       const balanceData = await stellar.getBalance(publicKey);
       setBalance(balanceData.xlm);
       setAssets(balanceData.assets);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching balance:', error);
-      alert('Failed to fetch balance. Please try again.');
+      // Set balance to 0 on error - don't show alert
+      // The getBalance function already handles 404 (unfunded accounts) gracefully
+      setBalance('0');
+      setAssets([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

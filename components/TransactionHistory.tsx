@@ -67,12 +67,12 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return 'Az önce';
+    if (diffMins < 60) return `${diffMins} dakika önce`;
+    if (diffHours < 24) return `${diffHours} saat önce`;
+    if (diffDays < 7) return `${diffDays} gün önce`;
     
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('tr-TR', { 
       month: 'short', 
       day: 'numeric',
       year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
@@ -80,7 +80,7 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
   };
 
   const formatAddress = (address?: string): string => {
-    if (!address) return 'N/A';
+    if (!address) return 'Yok';
     return stellar.formatAddress(address, 4, 4);
   };
 
@@ -90,7 +90,7 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
 
   if (loading) {
     return (
-      <Card title="📜 Transaction History">
+      <Card title="📜 İşlem Geçmişi">
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse">
@@ -107,13 +107,13 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           <FaHistory className="text-purple-400" />
-          Transaction History
+          İşlem Geçmişi
         </h2>
         <button
           onClick={fetchTransactions}
           disabled={refreshing}
           className="text-blue-400 hover:text-blue-300 disabled:opacity-50 transition-colors"
-          title="Refresh transactions"
+          title="Yenile"
         >
           <FaSync className={`text-xl ${refreshing ? 'animate-spin' : ''}`} />
         </button>
@@ -122,8 +122,8 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
       {transactions.length === 0 ? (
         <EmptyState
           icon="📭"
-          title="No Transactions Yet"
-          description="Your transaction history will appear here once you start sending or receiving XLM."
+          title="Henüz İşlem Yok"
+          description="XLM göndermeye veya almaya başladığınızda işlem geçmişiniz burada görünecek."
         />
       ) : (
         <div className="space-y-3">
@@ -146,7 +146,7 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
                     </div>
                     <div>
                       <p className="text-white font-semibold">
-                        {outgoing ? 'Sent' : 'Received'}
+                        {outgoing ? 'Gönderildi' : 'Alındı'}
                       </p>
                       {tx.amount && (
                         <p className={`text-lg font-bold ${
@@ -164,17 +164,17 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
                     rel="noopener noreferrer"
                     className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 transition-colors"
                   >
-                    Details <FaExternalLinkAlt className="text-xs" />
+                    Detaylar <FaExternalLinkAlt className="text-xs" />
                   </a>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-white/40 text-xs mb-1">From</p>
+                    <p className="text-white/40 text-xs mb-1">Gönderen</p>
                     <p className="text-white/80 font-mono">{formatAddress(tx.from)}</p>
                   </div>
                   <div>
-                    <p className="text-white/40 text-xs mb-1">To</p>
+                    <p className="text-white/40 text-xs mb-1">Alıcı</p>
                     <p className="text-white/80 font-mono">{formatAddress(tx.to)}</p>
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export default function TransactionHistory({ publicKey }: TransactionHistoryProp
       {transactions.length > 0 && (
         <div className="mt-4 text-center">
           <p className="text-white/40 text-sm">
-            Showing last {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+            Son {transactions.length} işlem gösteriliyor
           </p>
         </div>
       )}

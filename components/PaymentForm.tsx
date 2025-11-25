@@ -38,20 +38,20 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
 
     // Validate recipient address
     if (!recipient.trim()) {
-      newErrors.recipient = 'Recipient address is required';
+      newErrors.recipient = 'Alıcı adresi gereklidir';
     } else if (recipient.length !== 56 || !recipient.startsWith('G')) {
-      newErrors.recipient = 'Invalid Stellar address (must start with G and be 56 characters)';
+      newErrors.recipient = 'Geçersiz Stellar adresi (G ile başlamalı ve 56 karakter olmalı)';
     }
 
     // Validate amount
     if (!amount.trim()) {
-      newErrors.amount = 'Amount is required';
+      newErrors.amount = 'Miktar gereklidir';
     } else {
       const numAmount = parseFloat(amount);
       if (isNaN(numAmount) || numAmount <= 0) {
-        newErrors.amount = 'Amount must be a positive number';
+        newErrors.amount = 'Miktar pozitif bir sayı olmalıdır';
       } else if (numAmount < 0.0000001) {
-        newErrors.amount = 'Amount is too small (minimum: 0.0000001 XLM)';
+        newErrors.amount = 'Miktar çok küçük (minimum: 0.0000001 XLM)';
       }
     }
 
@@ -82,7 +82,7 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
         setTxHash(result.hash);
         setAlert({
           type: 'success',
-          message: `Payment sent successfully! 🎉`,
+          message: `Ödeme başarıyla gönderildi! 🎉`,
         });
         
         // Clear form
@@ -98,19 +98,25 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
       }
     } catch (error: any) {
       console.error('Payment error:', error);
-      let errorMessage = 'Failed to send payment. ';
+      let errorMessage = 'Ödeme gönderilemedi. ';
+      let solution = '';
       
-      if (error.message.includes('insufficient')) {
-        errorMessage += 'Insufficient balance.';
-      } else if (error.message.includes('destination')) {
-        errorMessage += 'Invalid destination account.';
+      if (error.message?.includes('insufficient') || error.message?.includes('low reserve')) {
+        errorMessage += 'Yetersiz bakiye.';
+        solution = 'Hesabınızda en az 1 XLM rezerv bırakmanız gerekiyor.';
+      } else if (error.message?.includes('destination') || error.message?.includes('not found') || error.message?.includes('404')) {
+        errorMessage += 'Alıcı hesap bulunamadı.';
+        solution = 'Alıcı hesap henüz oluşturulmamış. İlk ödeme için en az 1 XLM göndermeniz gerekiyor (hesap oluşturma ücreti).';
+      } else if (error.message?.includes('invalid') || error.message?.includes('malformed')) {
+        errorMessage += 'Geçersiz adres.';
+        solution = 'Lütfen geçerli bir Stellar adresi girdiğinizden emin olun (G ile başlayan 56 karakter).';
       } else {
-        errorMessage += error.message || 'Please try again.';
+        errorMessage += error.message || 'Lütfen tekrar deneyin.';
       }
 
       setAlert({
         type: 'error',
-        message: errorMessage,
+        message: errorMessage + (solution ? `\n\n💡 ${solution}` : ''),
       });
     } finally {
       setLoading(false);
@@ -121,7 +127,7 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
     <Card>
       <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
         <FaPaperPlane className="text-blue-400" />
-        Send Payment
+        Ödeme Gönder
       </h2>
 
       {alert && (
@@ -139,8 +145,8 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
           <div className="flex items-start gap-3">
             <FaCheckCircle className="text-green-400 text-xl flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <p className="text-green-400 font-semibold mb-2">Transaction Confirmed!</p>
-              <p className="text-white/70 text-sm mb-2">Transaction Hash:</p>
+              <p className="text-green-400 font-semibold mb-2">İşlem Onaylandı!</p>
+              <p className="text-white/70 text-sm mb-2">İşlem Hash:</p>
               <p className="text-white/90 text-xs font-mono break-all mb-3">{txHash}</p>
               <a
                 href={stellar.getExplorerLink(txHash, 'tx')}
@@ -148,7 +154,7 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-300 text-sm underline"
               >
-                View on Stellar Expert →
+                Stellar Expert'te Görüntüle →
               </a>
             </div>
           </div>
@@ -156,16 +162,35 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Recipient Address"
-          placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          value={recipient}
-          onChange={setRecipient}
-          error={errors.recipient}
-        />
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-white/80 text-sm">Alıcı Adresi</label>
+            <button
+              type="button"
+              onClick={() => {
+                setRecipient(publicKey);
+                setErrors({});
+              }}
+              className="text-xs text-blue-400 hover:text-blue-300 underline"
+            >
+              Kendi Adresime Gönder (Test)
+            </button>
+          </div>
+          <input
+            type="text"
+            value={recipient}
+            onChange={(e) => {
+              setRecipient(e.target.value);
+              setErrors({});
+            }}
+            placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+            className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+          />
+          {errors.recipient && <p className="text-red-400 text-sm mt-1">{errors.recipient}</p>}
+        </div>
 
         <Input
-          label="Amount (XLM)"
+          label="Miktar (XLM)"
           type="number"
           placeholder="0.00"
           value={amount}
@@ -174,8 +199,8 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
         />
 
         <Input
-          label="Memo (Optional)"
-          placeholder="Payment for..."
+          label="Not (Opsiyonel)"
+          placeholder="Ödeme açıklaması..."
           value={memo}
           onChange={setMemo}
         />
@@ -190,12 +215,12 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
-                Sending...
+                Gönderiliyor...
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
                 <FaPaperPlane />
-                Send Payment
+                Ödeme Gönder
               </span>
             )}
           </Button>
@@ -204,7 +229,7 @@ export default function PaymentForm({ publicKey, onSuccess }: PaymentFormProps) 
 
       <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
         <p className="text-blue-200/90 text-xs">
-          ⚠️ <strong>Double-check</strong> the recipient address before sending. Transactions on the blockchain are irreversible!
+          ⚠️ <strong>Dikkat:</strong> Göndermeden önce alıcı adresini kontrol edin. Blockchain üzerindeki işlemler geri alınamaz!
         </p>
       </div>
     </Card>

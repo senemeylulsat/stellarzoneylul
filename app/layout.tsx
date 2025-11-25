@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Stellar Payment Dashboard',
-  description: 'Build a beautiful payment dashboard on Stellar blockchain',
+  title: 'Stellar NFT Ticket Platform',
+  description: 'NFT Ticket Koleksiyon Platformu - Etkinlik, maç, konser ve müze biletlerinizi NFT olarak oluşturun ve koleksiyonunuzda saklayın',
 };
 
 export default function RootLayout({
